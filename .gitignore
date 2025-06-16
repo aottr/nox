@@ -46,3 +46,4 @@ nox
 keys
 secrets
 .nox-state.json
+!cmd/nox
