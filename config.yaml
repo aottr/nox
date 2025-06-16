@@ -1,0 +1,21 @@
+interval: "10m"
+ageKeyPath: "keys/key.txt"
+statePath: ".nox-state.json"
+defaultRepo: git@github.com:ShorkBytes/nox-secrets.git
+secrets:
+  - encrypted: "secrets/prod.env.age"
+    output: "secrets/prod.env"
+
+apps:
+  debug:
+    branch: main
+    files:
+      - path: debug/debug.age
+        output: ./secrets/.env
+
+  debug2:
+    branch: main
+    repo: git@github.com:ShorkBytes/nox-secrets.git
+    files:
+      - path: debug/debug.age
+        output: ./secrets/debug2.env
