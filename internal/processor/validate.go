@@ -10,7 +10,7 @@ import (
 	"github.com/aottr/nox/internal/gitrepo"
 )
 
-func Validate(cfg *config.Config) error {
+func ValidateConfig(cfg *config.Config) error {
 	if cfg.AgeKeyPath == "" {
 		return fmt.Errorf("age key path is required")
 	}
