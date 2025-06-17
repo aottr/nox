@@ -25,8 +25,9 @@ func main() {
 	var outputPath string
 
 	cmd := &cli.Command{
-		Name:  "nox",
-		Usage: "Manage and decrypt app secrets",
+		Name:                  "nox",
+		Usage:                 "Manage and decrypt app secrets",
+		EnableShellCompletion: true,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:        "config",
@@ -138,11 +139,15 @@ func main() {
 				Aliases: []string{"v"},
 				Usage:   "Validate configuration and secret integrity",
 				Action: func(ctx context.Context, cmd *cli.Command) error {
-					cfg, err := config.Load(configPath)
+					rtx, err := config.BuildRuntimeContext(config.RuntimeOptions{
+						ConfigPath:   configPath,
+						StatePath:    statePath,
+						IdentityPath: identityPath,
+					})
 					if err != nil {
-						log.Fatalf("failed to load config: %v", err)
+						log.Fatalf("failed to build runtime context: %v", err)
 					}
-					return processor.Validate(cfg)
+					return processor.ValidateConfig(rtx.Config)
 				},
 			},
 		},
