@@ -12,13 +12,13 @@ import (
 )
 
 type RuntimeOptions struct {
-	ConfigPath   string
-	StatePath    string
-	IdentityPath string
-	DryRun       bool
-	Force        bool
-	Verbose      bool
-	AppName      string
+	ConfigPath    string
+	StatePath     string
+	IdentityPaths []string
+	DryRun        bool
+	Force         bool
+	Verbose       bool
+	AppName       string
 }
 
 type RuntimeContext struct {
@@ -47,11 +47,18 @@ func BuildRuntimeContext(opts RuntimeOptions) (*RuntimeContext, error) {
 		return nil, err
 	}
 
-	identityPath := opts.IdentityPath
-	if identityPath == "" {
-		identityPath = cfg.Age.Identity
+	identityPaths := opts.IdentityPaths
+	if len(identityPaths) == 0 {
+		// try single identity file first
+		if cfg.Age.Identity != "" {
+			identityPaths = []string{cfg.Age.Identity}
+		} else if len(cfg.Age.Identities) > 0 {
+			identityPaths = cfg.Age.Identities
+		} else {
+			return nil, fmt.Errorf("no age identites found")
+		}
 	}
-	ids, err := crypto.LoadAgeIdentities(identityPath)
+	ids, err := crypto.LoadAgeIdentitiesFromPaths(identityPaths)
 	if err != nil {
 		return nil, err
 	}

@@ -22,3 +22,17 @@ func LoadAgeIdentities(path string) ([]age.Identity, error) {
 
 	return identities, nil
 }
+
+func LoadAgeIdentitiesFromPaths(paths []string) ([]age.Identity, error) {
+	var allIdentities []age.Identity
+
+	for _, path := range paths {
+		idents, err := LoadAgeIdentities(path)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load identities from %s: %w", path, err)
+		}
+		allIdentities = append(allIdentities, idents...)
+	}
+
+	return allIdentities, nil
+}

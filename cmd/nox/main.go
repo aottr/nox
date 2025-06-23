@@ -16,7 +16,7 @@ func main() {
 
 	var configPath string
 	var statePath string
-	var identityPath string
+	var identityPaths []string
 	var appName string
 	var dryRun bool
 	var force bool
@@ -41,10 +41,10 @@ func main() {
 				Usage:       "path to state file",
 				Destination: &statePath,
 			},
-			&cli.StringFlag{
+			&cli.StringSliceFlag{
 				Name:        "identity",
 				Usage:       "path to age identity file",
-				Destination: &identityPath,
+				Destination: &identityPaths,
 			},
 			&cli.BoolFlag{
 				Name:        "verbose",
@@ -127,13 +127,13 @@ func main() {
 				},
 				Action: func(ctx context.Context, cmd *cli.Command) error {
 					rtx, err := config.BuildRuntimeContext(config.RuntimeOptions{
-						ConfigPath:   configPath,
-						StatePath:    statePath,
-						IdentityPath: identityPath,
-						DryRun:       dryRun,
-						Force:        force,
-						AppName:      appName,
-						Verbose:      verbose,
+						ConfigPath:    configPath,
+						StatePath:     statePath,
+						IdentityPaths: identityPaths,
+						DryRun:        dryRun,
+						Force:         force,
+						AppName:       appName,
+						Verbose:       verbose,
 					})
 					if err != nil {
 						log.Fatalf("failed to build runtime context: %v", err)
@@ -150,9 +150,9 @@ func main() {
 				Usage:   "Validate configuration and secret integrity",
 				Action: func(ctx context.Context, cmd *cli.Command) error {
 					rtx, err := config.BuildRuntimeContext(config.RuntimeOptions{
-						ConfigPath:   configPath,
-						StatePath:    statePath,
-						IdentityPath: identityPath,
+						ConfigPath:    configPath,
+						StatePath:     statePath,
+						IdentityPaths: identityPaths,
 					})
 					if err != nil {
 						log.Fatalf("failed to build runtime context: %v", err)
