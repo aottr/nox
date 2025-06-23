@@ -12,19 +12,25 @@ type SecretMapping struct {
 }
 
 type FileConfig struct {
-    Path   string `yaml:"path"`
-    Output string `yaml:"output,omitempty"`
+	Path   string `yaml:"path"`
+	Output string `yaml:"output,omitempty"`
 }
 
 type AppConfig struct {
-	Repo   string   `yaml:"repo,omitempty"`
-	Branch string   `yaml:"branch"`
+	Repo   string       `yaml:"repo,omitempty"`
+	Branch string       `yaml:"branch"`
 	Files  []FileConfig `yaml:"files"`
+}
+
+type AgeConfig struct {
+	Identity   string   `yaml:"identity"`
+	Identities []string `yaml:"identities,omitempty"`
+	Recipients []string `yaml:"recipients,omitempty"`
 }
 
 type Config struct {
 	Interval    string               `yaml:"interval"`
-	AgeKeyPath  string               `yaml:"ageKeyPath"`
+	Age         AgeConfig            `yaml:"age"`
 	StatePath   string               `yaml:"statePath"`
 	DefaultRepo string               `yaml:"defaultRepo"`
 	Secrets     []SecretMapping      `yaml:"secrets"`

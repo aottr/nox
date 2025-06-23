@@ -11,7 +11,7 @@ import (
 )
 
 func ValidateConfig(cfg *config.Config) error {
-	if cfg.AgeKeyPath == "" {
+	if cfg.Age.Identity == "" {
 		return fmt.Errorf("age key path is required")
 	}
 

@@ -68,6 +68,38 @@ func main() {
 			// 	},
 			// },
 			{
+				Name:    "encrypt",
+				Aliases: []string{"enc"},
+				Usage:   "Encrypt a file",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:        "input",
+						Usage:       "path to input file",
+						Aliases:     []string{"i"},
+						Value:       constants.StandardInput,
+						Destination: &inputPath,
+					},
+					&cli.StringFlag{
+						Name:        "output",
+						Usage:       "path to output file",
+						Aliases:     []string{"o"},
+						Value:       constants.StandardOutput,
+						Destination: &outputPath,
+					},
+					&cli.StringSliceFlag{
+						Name:    "recipient",
+						Usage:   "age public key of recipient (repeatable)",
+						Aliases: []string{"r"},
+					},
+				},
+				Action: func(ctx context.Context, cmd *cli.Command) error {
+					fmt.Println("encrypting file", inputPath)
+					fmt.Println("writing to", outputPath)
+					fmt.Println(cmd.StringSlice("recipient"))
+					return nil
+				},
+			},
+			{
 				Name:    "export",
 				Aliases: []string{"e"},
 				Usage:   "Export all secrets to a single file",
@@ -110,28 +142,6 @@ func main() {
 						return processor.SyncApp(rtx)
 					}
 					return processor.SyncApps(rtx)
-				},
-			},
-			{
-				Name:    "encrypt",
-				Aliases: []string{"enc"},
-				Usage:   "Encrypt a file",
-				Flags: []cli.Flag{
-					&cli.StringFlag{
-						Name:        "input",
-						Usage:       "path to input file",
-						Destination: &inputPath,
-					},
-					&cli.StringFlag{
-						Name:        "output",
-						Usage:       "path to output file",
-						Destination: &outputPath,
-					},
-				},
-				Action: func(ctx context.Context, cmd *cli.Command) error {
-					fmt.Println("encrypting file", inputPath)
-					fmt.Println("writing to", outputPath)
-					return nil
 				},
 			},
 			{

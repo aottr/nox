@@ -49,7 +49,7 @@ func BuildRuntimeContext(opts RuntimeOptions) (*RuntimeContext, error) {
 
 	identityPath := opts.IdentityPath
 	if identityPath == "" {
-		identityPath = cfg.AgeKeyPath
+		identityPath = cfg.Age.Identity
 	}
 	ids, err := crypto.LoadAgeIdentities(identityPath)
 	if err != nil {
