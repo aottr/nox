@@ -3,7 +3,6 @@ package gitrepo
 import (
 	"fmt"
 	"io"
-	"log"
 	"os"
 
 	git "github.com/go-git/go-git/v5"
@@ -29,8 +28,6 @@ type ClonedRepo struct {
 
 func CloneRepoInMemory(opts GitFetchOptions) (*ClonedRepo, error) {
 
-	// log.Printf("🔄 Cloning repo %s (branch: %s)", opts.RepoURL, opts.Branch)
-
 	cloneOpts := &git.CloneOptions{
 		URL:           opts.RepoURL,
 		SingleBranch:  true,
@@ -46,7 +43,6 @@ func CloneRepoInMemory(opts GitFetchOptions) (*ClonedRepo, error) {
 		}
 	}
 	if token != nil {
-		log.Println("🔐 Using token authentication")
 		cloneOpts.Auth = &gitHttp.BasicAuth{
 			Username: "nox",
 			Password: *token,

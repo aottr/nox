@@ -5,9 +5,6 @@ age:
     - "age1nuxu3q9wr5wrd53dj8hj5flhz86q2dpjyuq7agseh0wzwq5t696s2dm0ht"
 statePath: ".nox-state.json"
 defaultRepo: git@github.com:ShorkBytes/nox-secrets.git
-secrets:
-  - encrypted: "secrets/prod.env.age"
-    output: "secrets/prod.env"
 
 apps:
   debug:
