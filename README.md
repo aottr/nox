@@ -36,7 +36,10 @@ Create a `config.yaml` file with the following contents:
 
 ```yaml
 interval: "10m"
-ageKeyPath: "keys/key.txt"
+age: 
+  identity: "keys/key.txt"
+  recipients: # optional, when used to encrypt secrets
+    - "age1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 statePath: ".nox-state.json"
 defaultRepo: git@github.com:ShorkBytes/nox-secrets.git
 
@@ -52,6 +55,14 @@ apps:
 
 ```bash
 nox --help
+```
+
+### How to
+
+#### Decrypt secret into custom file
+
+```bash
+nox decrypt --app debug --dry-run > secrets.env
 ```
 
 ### Contributing

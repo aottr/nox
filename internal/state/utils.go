@@ -1,9 +1,9 @@
 package state
 
 import (
-	"fmt"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 )
 
 // HashContent returns the SHA256 hash of the given data.

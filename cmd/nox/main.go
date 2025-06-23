@@ -17,7 +17,7 @@ func main() {
 	var configPath string
 	var statePath string
 	var identityPaths []string
-	var appName string
+
 	var dryRun bool
 	var force bool
 	var verbose bool
@@ -100,21 +100,20 @@ func main() {
 				},
 			},
 			{
-				Name:    "export",
-				Aliases: []string{"e"},
-				Usage:   "Export all secrets to a single file",
+				Name:    "decrypt",
+				Aliases: []string{"d"},
+				Usage:   "Decrypts all secrets of one or all apps",
 				Flags: []cli.Flag{
 					&cli.StringFlag{
-						Name:        "app",
-						Aliases:     []string{"a"},
-						Usage:       "app to export secrets for",
-						Destination: &appName,
+						Name:    "app",
+						Aliases: []string{"a"},
+						Usage:   "app to decrypt secrets for",
 					},
 					&cli.BoolFlag{
 						Name:        "dry-run",
 						Aliases:     []string{"d"},
 						Value:       false,
-						Usage:       "only print what would be exported",
+						Usage:       "only print what would be decrypted",
 						Destination: &dryRun,
 					},
 					&cli.BoolFlag{
@@ -132,13 +131,13 @@ func main() {
 						IdentityPaths: identityPaths,
 						DryRun:        dryRun,
 						Force:         force,
-						AppName:       appName,
+						AppName:       cmd.String("app"),
 						Verbose:       verbose,
 					})
 					if err != nil {
 						log.Fatalf("failed to build runtime context: %v", err)
 					}
-					if appName != "" {
+					if cmd.String("app") != "" {
 						return processor.SyncApp(rtx)
 					}
 					return processor.SyncApps(rtx)

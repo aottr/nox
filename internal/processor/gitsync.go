@@ -2,6 +2,7 @@ package processor
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/aottr/nox/internal/cache"
 	"github.com/aottr/nox/internal/config"
@@ -45,7 +46,7 @@ func SyncApp(ctx *config.RuntimeContext) error {
 		cacheKey := state.GenerateKey(*appName, file.Path)
 
 		// skip if file is up to date and force is not set
-		if !ctx.Force {
+		if !ctx.Force && !ctx.DryRun {
 			if prevHash, ok := st.Data[cacheKey]; ok && prevHash == hash {
 				ctx.Logger.Printf("file %s is up to date", file.Path)
 				continue
@@ -62,7 +63,7 @@ func SyncApp(ctx *config.RuntimeContext) error {
 		// skip writing file if dry run is set
 		if ctx.DryRun {
 			ctx.Logger.Printf("❌ dry run, not writing file %s", file.Output)
-			fmt.Println(string(plaintext))
+			os.Stdout.Write(plaintext)
 			continue
 		}
 		WriteToFile(plaintext, file, &FileProcessorOptions{CreateDir: true})
