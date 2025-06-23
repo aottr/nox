@@ -29,7 +29,7 @@ type ClonedRepo struct {
 
 func CloneRepoInMemory(opts GitFetchOptions) (*ClonedRepo, error) {
 
-	log.Printf("🔄 Cloning repo %s (branch: %s)", opts.RepoURL, opts.Branch)
+	// log.Printf("🔄 Cloning repo %s (branch: %s)", opts.RepoURL, opts.Branch)
 
 	cloneOpts := &git.CloneOptions{
 		URL:           opts.RepoURL,
@@ -55,22 +55,22 @@ func CloneRepoInMemory(opts GitFetchOptions) (*ClonedRepo, error) {
 
 	repo, err := git.Clone(gitMem.NewStorage(), nil, cloneOpts)
 	if err != nil {
-		return nil, fmt.Errorf("Clone failed: %w", err)
+		return nil, fmt.Errorf("clone failed: %w", err)
 	}
 
 	ref, err := repo.Head()
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get HEAD: %w", err)
+		return nil, fmt.Errorf("failed to get HEAD: %w", err)
 	}
 
 	commit, err := repo.CommitObject(ref.Hash())
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get commit: %w", err)
+		return nil, fmt.Errorf("failed to get commit: %w", err)
 	}
 
 	tree, err := commit.Tree()
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get tree: %w", err)
+		return nil, fmt.Errorf("failed to get tree: %w", err)
 	}
 
 	return &ClonedRepo{
