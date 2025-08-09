@@ -55,18 +55,18 @@ func main() {
 			},
 		},
 		Commands: []*cli.Command{
-			// {
-			// 	Name:    "run",
-			// 	Aliases: []string{"r"},
-			// 	Usage:   "Fetch, decrypt, and process app secrets",
-			// 	Action: func(ctx context.Context, cmd *cli.Command) error {
-			// 		cfg, err := config.Load(configPath)
-			// 		if err != nil {
-			// 			log.Fatalf("failed to load config: %v", err)
-			// 		}
-			// 		return processor.ProcessApps(cfg)
-			// 	},
-			// },
+			{
+				Name:  "daemon",
+				Usage: "Run in background mode and watch for changes",
+				Action: func(ctx context.Context, cmd *cli.Command) error {
+					cfg, err := config.Load(configPath)
+					if err != nil {
+						log.Fatalf("failed to load config: %v", err)
+					}
+					//return processor.ProcessApps(cfg)
+					return nil
+				},
+			},
 			{
 				Name:    "encrypt",
 				Aliases: []string{"enc"},
