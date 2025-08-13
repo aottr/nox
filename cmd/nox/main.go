@@ -3,16 +3,21 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/aottr/nox/internal/config"
 	"github.com/aottr/nox/internal/constants"
+	"github.com/aottr/nox/internal/crypto"
+	"github.com/aottr/nox/internal/logging"
 	"github.com/aottr/nox/internal/processor"
 	"github.com/urfave/cli/v3"
 )
 
 func main() {
+
+	logging.Init()
+	logging.SetLevel("info")
+	log := logging.Get()
 
 	var configPath string
 	var statePath string
@@ -95,7 +100,43 @@ func main() {
 				Action: func(ctx context.Context, cmd *cli.Command) error {
 					fmt.Println("encrypting file", inputPath)
 					fmt.Println("writing to", outputPath)
-					fmt.Println(cmd.StringSlice("recipient"))
+					recipients, err := crypto.StringsToRecipients(cmd.StringSlice("recipient"))
+					if err != nil {
+						return err
+					}
+					out, err := crypto.EncryptFile(inputPath, recipients)
+					if err != nil {
+						return err
+					}
+					fmt.Println(string(out))
+					// priv, pub, err := crypto.GenerateAndWriteX25519Identity("test.key")
+					// if err != nil {
+					// 	return err
+					// }
+					// fmt.Println(priv)
+					// fmt.Println(pub)
+
+					return nil
+				},
+			},
+			{
+				Name: "generate",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:        "output",
+						Usage:       "path to output file",
+						Aliases:     []string{"o"},
+						Value:       constants.StandardOutput,
+						Destination: &outputPath,
+					},
+				},
+				Action: func(ctx context.Context, cmd *cli.Command) error {
+					priv, pub, err := crypto.GenerateIdentity(cmd.String("output"))
+					if err != nil {
+						return err
+					}
+					fmt.Println(priv)
+					fmt.Println(pub)
 					return nil
 				},
 			},
@@ -135,7 +176,7 @@ func main() {
 						Verbose:       verbose,
 					})
 					if err != nil {
-						log.Fatalf("failed to build runtime context: %v", err)
+						log.Error("failed to build runtime context", "error", err.Error())
 					}
 					if cmd.String("app") != "" {
 						return processor.SyncApp(rtx)
@@ -154,7 +195,7 @@ func main() {
 						IdentityPaths: identityPaths,
 					})
 					if err != nil {
-						log.Fatalf("failed to build runtime context: %v", err)
+						log.Error("failed to build runtime context", "error", err.Error())
 					}
 					return processor.ValidateConfig(rtx.Config)
 				},
@@ -163,6 +204,6 @@ func main() {
 	}
 
 	if err := cmd.Run(context.Background(), os.Args); err != nil {
-		log.Fatal(err)
+		log.Error("failed to run command", "error", err.Error())
 	}
 }

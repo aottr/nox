@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"filippo.io/age"
 )
@@ -35,4 +36,28 @@ func LoadAgeIdentitiesFromPaths(paths []string) ([]age.Identity, error) {
 	}
 
 	return allIdentities, nil
+}
+
+func GenerateIdentity(path string) (priv string, pub string, err error) {
+	id, err := age.GenerateX25519Identity()
+	if err != nil {
+		return "", "", fmt.Errorf("generate identity: %w", err)
+	}
+
+	priv = id.String()            // "AGE-SECRET-KEY-1..."
+	pub = id.Recipient().String() // "age1..."
+
+	// ensure directory exists and apply permissions
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		return "", "", fmt.Errorf("mkdir %s: %w", filepath.Dir(path), err)
+	}
+	if err := os.WriteFile(path, []byte(priv+"\n"), 0o600); err != nil {
+		return "", "", fmt.Errorf("write identity: %w", err)
+	}
+
+	// write public key
+	if err := os.WriteFile(path+".pub", []byte(pub+"\n"), 0o644); err != nil {
+		return "", "", fmt.Errorf("write identity: %w", err)
+	}
+	return priv, pub, nil
 }
