@@ -36,6 +36,7 @@ func main() {
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:        "config",
+				Aliases:     []string{"c"},
 				Value:       constants.DefaultConfigPath,
 				Usage:       "path to config file",
 				Destination: &configPath,
@@ -98,25 +99,42 @@ func main() {
 					},
 				},
 				Action: func(ctx context.Context, cmd *cli.Command) error {
-					fmt.Println("encrypting file", inputPath)
-					fmt.Println("writing to", outputPath)
 					recipients, err := crypto.StringsToRecipients(cmd.StringSlice("recipient"))
 					if err != nil {
 						return err
 					}
-					out, err := crypto.EncryptFile(inputPath, recipients)
+					if err := processor.IOWrapper(inputPath, outputPath, recipients, crypto.EncryptBytes); err != nil {
+						return err
+					}
+					return nil
+				},
+			},
+			{
+				Name:    "decrypt",
+				Aliases: []string{"dec"},
+				Usage:   "Decrypt a file",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:        "input",
+						Usage:       "path to input file",
+						Aliases:     []string{"i"},
+						Value:       constants.StandardInput,
+						Destination: &inputPath,
+					},
+					&cli.StringFlag{
+						Name:        "output",
+						Usage:       "path to output file",
+						Aliases:     []string{"o"},
+						Value:       constants.StandardOutput,
+						Destination: &outputPath,
+					},
+				},
+				Action: func(ctx context.Context, cmd *cli.Command) error {
+					identities, err := crypto.LoadAgeIdentitiesFromPaths(identityPaths)
 					if err != nil {
 						return err
 					}
-					fmt.Println(string(out))
-					// priv, pub, err := crypto.GenerateAndWriteX25519Identity("test.key")
-					// if err != nil {
-					// 	return err
-					// }
-					// fmt.Println(priv)
-					// fmt.Println(pub)
-
-					return nil
+					return processor.IOWrapper(inputPath, constants.StandardOutput, identities, crypto.DecryptBytes)
 				},
 			},
 			{
@@ -131,19 +149,29 @@ func main() {
 					},
 				},
 				Action: func(ctx context.Context, cmd *cli.Command) error {
-					priv, pub, err := crypto.GenerateIdentity(cmd.String("output"))
-					if err != nil {
-						return err
+
+					output := cmd.String("output")
+					switch output {
+					case constants.StandardOutput:
+						priv, pub, err := crypto.GenerateIdentity("")
+						if err != nil {
+							return err
+						}
+						fmt.Println("Public key:\n", pub, "\nPrivate Key:\n", priv)
+					default:
+						_, _, err := crypto.GenerateIdentity(cmd.String("output"))
+						if err != nil {
+							return err
+						}
 					}
-					fmt.Println(priv)
-					fmt.Println(pub)
+
 					return nil
 				},
 			},
 			{
-				Name:    "decrypt",
-				Aliases: []string{"d"},
-				Usage:   "Decrypts all secrets of one or all apps",
+				Name:    "sync",
+				Aliases: []string{"fetch"},
+				Usage:   "Fetches and decrypts all secrets of one or all apps",
 				Flags: []cli.Flag{
 					&cli.StringFlag{
 						Name:    "app",

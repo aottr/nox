@@ -47,6 +47,10 @@ func GenerateIdentity(path string) (priv string, pub string, err error) {
 	priv = id.String()            // "AGE-SECRET-KEY-1..."
 	pub = id.Recipient().String() // "age1..."
 
+	if path == "" {
+		return priv, pub, nil
+	}
+
 	// ensure directory exists and apply permissions
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return "", "", fmt.Errorf("mkdir %s: %w", filepath.Dir(path), err)

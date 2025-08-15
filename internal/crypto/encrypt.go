@@ -29,7 +29,7 @@ func EncryptBytes(data []byte, recipients []age.Recipient) ([]byte, error) {
 	}
 
 	if _, err := io.Copy(enc, src); err != nil {
-		enc.Close() // ensure resources are freed
+		enc.Close()
 		return nil, fmt.Errorf("encryption failed: %w", err)
 	}
 
