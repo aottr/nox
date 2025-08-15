@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -16,10 +17,18 @@ type FileConfig struct {
 	Output string `yaml:"output,omitempty"`
 }
 
+type GitConfig struct {
+	Repo   string `yaml:"repo"`
+	Branch string `yaml:"branch"`
+}
+
+func (g GitConfig) IsValid() bool {
+	return g.Repo != "" && g.Branch != ""
+}
+
 type AppConfig struct {
-	Repo   string       `yaml:"repo,omitempty"`
-	Branch string       `yaml:"branch"`
-	Files  []FileConfig `yaml:"files"`
+	GitConfig GitConfig    `yaml:"git,omitempty"`
+	Files     []FileConfig `yaml:"files"`
 }
 
 type AgeConfig struct {
@@ -29,12 +38,11 @@ type AgeConfig struct {
 }
 
 type Config struct {
-	Interval    string               `yaml:"interval"`
-	Age         AgeConfig            `yaml:"age"`
-	StatePath   string               `yaml:"statePath"`
-	DefaultRepo string               `yaml:"defaultRepo"`
-	Secrets     []SecretMapping      `yaml:"secrets"`
-	Apps        map[string]AppConfig `yaml:"apps"`
+	Interval  string               `yaml:"interval"`
+	Age       AgeConfig            `yaml:"age"`
+	StatePath string               `yaml:"statePath"`
+	GitConfig GitConfig            `yaml:"git"`
+	Apps      map[string]AppConfig `yaml:"apps"`
 }
 
 func Load(path string) (*Config, error) {
@@ -48,5 +56,42 @@ func Load(path string) (*Config, error) {
 		return nil, err
 	}
 
+	// validate config
+	// must have at least one git config
+	hasAnyGit := cfg.GitConfig.IsValid()
+	if !hasAnyGit {
+		for _, app := range cfg.Apps {
+			if app.GitConfig.IsValid() {
+				hasAnyGit = true
+				break
+			}
+		}
+	}
+	if !hasAnyGit {
+		return nil, fmt.Errorf("no git configuration found: set either top-level git or app-specific git")
+	}
+
 	return &cfg, nil
+}
+
+func InitConfig(path string) error {
+
+	_, err := os.Stat(path)
+	if err == nil {
+		return fmt.Errorf("config file already exists")
+	}
+
+	cfg := Config{
+		Interval:  "10m",
+		StatePath: ".nox-state.json",
+		GitConfig: GitConfig{
+			Repo:   "",
+			Branch: "main",
+		},
+	}
+	cfgYaml, err := yaml.Marshal(cfg)
+	if err != nil {
+		return fmt.Errorf("failed to marshal config: %w", err)
+	}
+	return os.WriteFile(path, cfgYaml, 0600)
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/aottr/nox/internal/cache"
 	"github.com/aottr/nox/internal/config"
 	"github.com/aottr/nox/internal/crypto"
-	"github.com/aottr/nox/internal/gitrepo"
+	"github.com/aottr/nox/internal/git"
 	"github.com/aottr/nox/internal/state"
 )
 
@@ -21,15 +21,20 @@ func SyncApp(ctx *config.RuntimeContext) error {
 
 	// retrieve app config and repository
 	app := cfg.Apps[*appName]
-	repoUrl := app.Repo
+	repoUrl := app.GitConfig.Repo
 	if repoUrl == "" {
-		repoUrl = cfg.DefaultRepo
+		repoUrl = cfg.GitConfig.Repo
 	}
-	key := cache.RepoKey{Repo: repoUrl, Branch: app.Branch}
+	branchName := app.GitConfig.Branch
+	if branchName == "" {
+		branchName = cfg.GitConfig.Branch
+	}
+
+	key := cache.RepoKey{Repo: repoUrl, Branch: branchName}
 	repo, exists := cache.GlobalCache.Get(key)
 	if !exists {
 		var err error
-		repo, err = cache.GlobalCache.FetchRepo(key, nil)
+		repo, err = cache.GlobalCache.FetchRepo(key)
 		if err != nil {
 			return fmt.Errorf("failed to fetch repo for app %s: %w", *appName, err)
 		}
@@ -37,7 +42,7 @@ func SyncApp(ctx *config.RuntimeContext) error {
 
 	// iterate over files and decrypt
 	for _, file := range app.Files {
-		content, err := gitrepo.GetFileContentFromTree(repo, file.Path)
+		content, err := git.GetFileContentFromTree(repo, file.Path)
 		if err != nil {
 			return fmt.Errorf("failed to get file %s: %w", file, err)
 		}
@@ -62,7 +67,7 @@ func SyncApp(ctx *config.RuntimeContext) error {
 
 		// skip writing file if dry run is set
 		if ctx.DryRun {
-			ctx.Logger.Printf("❌ dry run, not writing file %s", file.Output)
+			ctx.Logger.Printf("dry run, not writing file %s", file.Output)
 			os.Stdout.Write(plaintext)
 			continue
 		}

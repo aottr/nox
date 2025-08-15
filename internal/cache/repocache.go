@@ -3,7 +3,8 @@ package cache
 import (
 	"sync"
 
-	"github.com/aottr/nox/internal/gitrepo"
+	"github.com/aottr/nox/internal/config"
+	"github.com/aottr/nox/internal/git"
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
@@ -36,11 +37,10 @@ func (c *RepoCache) Set(key RepoKey, tree *object.Tree) {
 	c.repos[key] = tree
 }
 
-func (c *RepoCache) FetchRepo(key RepoKey, token *string) (*object.Tree, error) {
-	r, err := gitrepo.CloneRepoInMemory(gitrepo.GitFetchOptions{
-		RepoURL: key.Repo,
-		Branch:  key.Branch,
-		Token:   token,
+func (c *RepoCache) FetchRepo(key RepoKey) (*object.Tree, error) {
+	r, err := git.CloneRepo(config.GitConfig{
+		Repo:   key.Repo,
+		Branch: key.Branch,
 	})
 	if err != nil {
 		return nil, err

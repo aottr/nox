@@ -4,11 +4,14 @@ age:
   recipients:
     - "age1qq5sazxv755u2vs5ulyl486jxhlg7ztrvm27nya47aln668xldkqsm4kn5"
 statePath: ".nox-state.json"
-defaultRepo: git@github.com:ShorkBytes/nox-secrets.git
-
+git:
+  repo: git@github.com:ShorkBytes/nox-secrets.git
+  branch: main
 apps:
   debug:
-    branch: main
+    git:
+      repo: git@github.com:ShorkBytes/nox-secrets.git
+      branch: main
     files:
       - path: debug/debug.age
         output: ./secrets/.env

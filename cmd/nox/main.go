@@ -228,6 +228,12 @@ func main() {
 					return processor.ValidateConfig(rtx.Config)
 				},
 			},
+			{
+				Name: "init",
+				Action: func(ctx context.Context, cmd *cli.Command) error {
+					return config.InitConfig(configPath)
+				},
+			},
 		},
 	}
 

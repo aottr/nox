@@ -7,7 +7,7 @@ import (
 	// "strings"
 
 	"github.com/aottr/nox/internal/config"
-	"github.com/aottr/nox/internal/gitrepo"
+	"github.com/aottr/nox/internal/git"
 )
 
 func ValidateConfig(cfg *config.Config) error {
@@ -22,26 +22,23 @@ func ValidateConfig(cfg *config.Config) error {
 	for appName, app := range cfg.Apps {
 		fmt.Printf("✅ Validating app %s\n", appName)
 
-		repoURL := app.Repo
-		if repoURL == "" {
-			repoURL = cfg.DefaultRepo
+		gitConf := app.GitConfig
+		if !gitConf.IsValid() {
+			gitConf = cfg.GitConfig
 		}
 
-		repo, err := gitrepo.CloneRepoInMemory(gitrepo.GitFetchOptions{
-			RepoURL: repoURL,
-			Branch:  app.Branch,
-		})
+		repo, err := git.CloneRepo(gitConf)
 		if err != nil {
 			return fmt.Errorf("failed to clone for app %s: %w", appName, err)
 		}
 
 		for _, file := range app.Files {
-			if !gitrepo.FileExistsInTree(repo.Tree, file.Path) {
+			if !git.FileExistsInTree(repo.Tree, file.Path) {
 				return fmt.Errorf("❌ file %s missing in app %s", file, appName)
 			}
 			fmt.Printf("✔️ Found file %s in repo\n", file)
 		}
 	}
-	fmt.Println("✨ All checks passed!")
+	fmt.Println("all checks passed!")
 	return nil
 }
