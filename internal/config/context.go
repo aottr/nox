@@ -2,9 +2,6 @@ package config
 
 import (
 	"fmt"
-	"io"
-	"log"
-	"os"
 
 	"filippo.io/age"
 	"github.com/aottr/nox/internal/crypto"
@@ -25,11 +22,42 @@ type RuntimeContext struct {
 	Config     *Config
 	State      *state.State
 	Identities []age.Identity
-	App        *string
-	Logger     *log.Logger
+	App        string
 	DryRun     bool
 	Force      bool
-	Verbose    bool
+}
+
+func BuildRuntimeCtxFromConfig(config *Config) (*RuntimeContext, error) {
+
+	if config.StatePath != "" {
+		state.SetPath(config.StatePath)
+	}
+	st, err := state.Load()
+	if err != nil {
+		return nil, err
+	}
+
+	var identityPaths []string
+	// try single identity file first
+	if config.Age.Identity != "" {
+		identityPaths = []string{config.Age.Identity}
+	} else if len(config.Age.Identities) > 0 {
+		identityPaths = config.Age.Identities
+	} else {
+		return nil, fmt.Errorf("no age identites found")
+	}
+	ids, err := crypto.LoadAgeIdentitiesFromPaths(identityPaths)
+	if err != nil {
+		return nil, err
+	}
+
+	return &RuntimeContext{
+		Config:     config,
+		State:      st,
+		Identities: ids,
+		DryRun:     false,
+		Force:      false,
+	}, nil
 }
 
 func BuildRuntimeContext(opts RuntimeOptions) (*RuntimeContext, error) {
@@ -63,20 +91,13 @@ func BuildRuntimeContext(opts RuntimeOptions) (*RuntimeContext, error) {
 		return nil, err
 	}
 
-	var app *string
+	var app string
 	if opts.AppName != "" {
 		if _, exists := cfg.Apps[opts.AppName]; exists {
-			app = &opts.AppName
+			app = opts.AppName
 		} else {
 			return nil, fmt.Errorf("app '%s' not found in configuration", opts.AppName)
 		}
-	}
-
-	var logger *log.Logger
-	if opts.Verbose {
-		logger = log.New(os.Stdout, "", log.LstdFlags)
-	} else {
-		logger = log.New(io.Discard, "", 0)
 	}
 
 	return &RuntimeContext{
@@ -84,9 +105,7 @@ func BuildRuntimeContext(opts RuntimeOptions) (*RuntimeContext, error) {
 		State:      st,
 		Identities: ids,
 		App:        app,
-		Logger:     logger,
 		DryRun:     opts.DryRun,
 		Force:      opts.Force,
-		Verbose:    opts.Verbose,
 	}, nil
 }

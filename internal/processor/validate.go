@@ -2,9 +2,6 @@ package processor
 
 import (
 	"fmt"
-	// "os"
-	// "path/filepath"
-	// "strings"
 
 	"github.com/aottr/nox/internal/config"
 	"github.com/aottr/nox/internal/git"

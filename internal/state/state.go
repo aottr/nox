@@ -2,7 +2,6 @@ package state
 
 import (
 	"encoding/json"
-	"log"
 	"os"
 	"time"
 )
@@ -14,7 +13,7 @@ type State struct {
 	Data        map[string]string
 }
 
-var defaultPath = ".nox-state.json" // fallback default
+var defaultPath = ".nox-state.json"
 
 // SetPath updates the default file path used for saving and loading state
 func SetPath(path string) {
@@ -27,7 +26,6 @@ func (s *State) Touch() {
 }
 
 // Load reads the state from the state file
-// Returns an error if the file cannot be read or unmarshaled.
 func Load() (*State, error) {
 	return loadFromFile(defaultPath)
 }
@@ -42,10 +40,8 @@ func Save(state *State) error {
 func loadFromFile(path string) (*State, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		log.Printf("⚠️ No previous state found, starting fresh: %v", err)
 		return &State{Data: make(map[string]string)}, nil
 	}
-
 	var state State
 	if err := json.Unmarshal(data, &state); err != nil {
 		return nil, err

@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"gopkg.in/yaml.v3"
 )
@@ -38,11 +39,12 @@ type AgeConfig struct {
 }
 
 type Config struct {
-	Interval  string               `yaml:"interval"`
-	Age       AgeConfig            `yaml:"age"`
-	StatePath string               `yaml:"statePath"`
-	GitConfig GitConfig            `yaml:"git"`
-	Apps      map[string]AppConfig `yaml:"apps"`
+	Interval       time.Duration        `yaml:"-"`
+	IntervalString string               `yaml:"interval"`
+	Age            AgeConfig            `yaml:"age"`
+	StatePath      string               `yaml:"statePath"`
+	GitConfig      GitConfig            `yaml:"git"`
+	Apps           map[string]AppConfig `yaml:"apps"`
 }
 
 func Load(path string) (*Config, error) {
@@ -71,6 +73,11 @@ func Load(path string) (*Config, error) {
 		return nil, fmt.Errorf("no git configuration found: set either top-level git or app-specific git")
 	}
 
+	// validate interval
+	cfg.Interval, err = time.ParseDuration(cfg.IntervalString)
+	if err != nil {
+		return nil, fmt.Errorf("invalid interval: %w", err)
+	}
 	return &cfg, nil
 }
 
@@ -82,8 +89,8 @@ func InitConfig(path string) error {
 	}
 
 	cfg := Config{
-		Interval:  "10m",
-		StatePath: ".nox-state.json",
+		IntervalString: "10m",
+		StatePath:      ".nox-state.json",
 		GitConfig: GitConfig{
 			Repo:   "",
 			Branch: "main",

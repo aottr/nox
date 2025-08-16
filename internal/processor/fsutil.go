@@ -10,11 +10,7 @@ import (
 	"github.com/aottr/nox/internal/constants"
 )
 
-type FileProcessorOptions struct {
-	CreateDir bool
-}
-
-func WriteToFile(data []byte, file config.FileConfig, opts *FileProcessorOptions) error {
+func WriteToFile(data []byte, file config.FileConfig) error {
 	path := file.Output
 	if path == "" {
 		// Default output filename if none specified, e.g. replace .age with .env
@@ -24,10 +20,8 @@ func WriteToFile(data []byte, file config.FileConfig, opts *FileProcessorOptions
 			path = path[:len(path)-4] + ".env"
 		}
 	}
-	if opts.CreateDir {
-		if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
-			return fmt.Errorf("failed to create directories for %s: %w", path, err)
-		}
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		return fmt.Errorf("failed to create directories for %s: %w", path, err)
 	}
 
 	if err := os.WriteFile(path, data, 0600); err != nil {

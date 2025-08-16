@@ -10,12 +10,13 @@ import (
 	"github.com/aottr/nox/internal/crypto"
 	"github.com/aottr/nox/internal/logging"
 	"github.com/aottr/nox/internal/processor"
+	"github.com/aottr/nox/internal/watcher"
 	"github.com/urfave/cli/v3"
 )
 
 func main() {
 
-	logging.Init()
+	logging.InitTextLogger()
 	logging.SetLevel("info")
 	log := logging.Get()
 
@@ -61,18 +62,6 @@ func main() {
 			},
 		},
 		Commands: []*cli.Command{
-			// {
-			// 	Name:    "run",
-			// 	Aliases: []string{"r"},
-			// 	Usage:   "Fetch, decrypt, and process app secrets",
-			// 	Action: func(ctx context.Context, cmd *cli.Command) error {
-			// 		cfg, err := config.Load(configPath)
-			// 		if err != nil {
-			// 			log.Fatalf("failed to load config: %v", err)
-			// 		}
-			// 		return processor.ProcessApps(cfg)
-			// 	},
-			// },
 			{
 				Name:    "encrypt",
 				Aliases: []string{"enc"},
@@ -232,6 +221,14 @@ func main() {
 				Name: "init",
 				Action: func(ctx context.Context, cmd *cli.Command) error {
 					return config.InitConfig(configPath)
+				},
+			},
+			{
+				Name: "watch",
+				Action: func(ctx context.Context, cmd *cli.Command) error {
+					cfg, _ := config.Load(configPath)
+					watcher.Start(cfg)
+					return nil
 				},
 			},
 		},

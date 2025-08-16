@@ -13,6 +13,7 @@ import (
 
 type ClonedRepo struct {
 	Repo   *git.Repository
+	Branch string
 	Tree   *object.Tree
 	Ref    *plumbing.Reference
 	Commit *object.Commit
@@ -53,6 +54,7 @@ func CloneRepo(c config.GitConfig) (*ClonedRepo, error) {
 	}
 	return &ClonedRepo{
 		Repo:   repo,
+		Branch: c.Branch,
 		Ref:    ref,
 		Commit: commit,
 		Tree:   tree,
@@ -77,6 +79,34 @@ func GetFileContentFromTree(tree *object.Tree, path string) ([]byte, error) {
 	}
 
 	return content, nil
+}
+
+func (r *ClonedRepo) Refresh() error {
+	if err := r.Repo.Fetch(&git.FetchOptions{
+		RemoteName: "origin",
+		Force:      true,
+		Prune:      true,
+	}); err != nil && err != git.NoErrAlreadyUpToDate {
+		return fmt.Errorf("fetch: %w", err)
+	}
+	remoteRef := plumbing.NewRemoteReferenceName("origin", r.Branch)
+	ref, err := r.Repo.Reference(remoteRef, true)
+	if err != nil {
+		return err
+	}
+	r.Ref = ref
+
+	commit, err := r.Repo.CommitObject(r.Ref.Hash())
+	if err != nil {
+		return err
+	}
+	r.Commit = commit
+	tree, err := commit.Tree()
+	if err != nil {
+		return err
+	}
+	r.Tree = tree
+	return nil
 }
 
 func FileExistsInTree(tree *object.Tree, path string) bool {

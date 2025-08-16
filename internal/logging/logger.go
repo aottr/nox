@@ -20,13 +20,18 @@ func Get() Logger {
 	return logger
 }
 
+func InitTextLogger() {
+	once.Do(func() {
+		logLevel.Set(slog.LevelInfo)
+		h := NewCliHandler(os.Stdout, logLevel)
+		logger = slog.New(h)
+	})
+}
+
 func Init() {
 	once.Do(func() {
 		logLevel.Set(slog.LevelInfo)
-
-		h := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-			Level: logLevel,
-		})
+		h := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelError})
 		logger = slog.New(h)
 	})
 }
